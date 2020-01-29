@@ -15,6 +15,7 @@ using NSwag;
 using NSwag.Generation.Processors.Security;
 using System.Linq;
 using CleanArchitecture.Infrastructure;
+using CleanArchitecture.WebUI.Checks;
 
 namespace CleanArchitecture.WebUI
 {
@@ -41,6 +42,7 @@ namespace CleanArchitecture.WebUI
             services.AddHttpContextAccessor();
 
             services.AddHealthChecks()
+                .AddCheck<ApiHealthCheck>("ApiHealthCheck")
                 .AddDbContextCheck<ApplicationDbContext>();
 
             services.AddControllersWithViews()
@@ -117,6 +119,7 @@ namespace CleanArchitecture.WebUI
                     name: "default",
                     pattern: "{controller}/{action=Index}/{id?}");
                 endpoints.MapRazorPages();
+                endpoints.MapHealthChecks("health");
             });
 
             app.UseSpa(spa =>
