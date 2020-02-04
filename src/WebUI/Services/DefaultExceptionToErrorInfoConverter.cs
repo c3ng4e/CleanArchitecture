@@ -1,4 +1,6 @@
-﻿using Microsoft.Extensions.Options;
+﻿using CleanArchitecture.Application.Common.Exceptions;
+using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Options;
 using System;
 using System.Net;
 
@@ -13,11 +15,31 @@ namespace CleanArchitecture.WebUI.Services
             Options = options.Value;
         }
 
-        public HttpStatusCode GetStatusCode(HttpListenerContext httpContext, Exception exception)
+        public HttpStatusCode GetStatusCode(Exception exception)
         {
-            if (Options.ErrorCodeToHttpStatusCodeMappings.TryGetValue("Ca.0001", out var status)) 
+            if (exception is IHasErrorCode exceptionWithErrorCode && !string.IsNullOrWhiteSpace(exceptionWithErrorCode.Code))
             {
-                return status;
+                if (Options.ErrorCodeToHttpStatusCodeMappings.TryGetValue(exceptionWithErrorCode.Code, out var status)) 
+                {
+                    return status;
+                }
+            }
+
+            // TODO: Auth exception?
+
+            if (exception is ValidationException) 
+            {
+                return HttpStatusCode.BadRequest;
+            }
+
+            if (exception is NotImplementedException) 
+            {
+                return HttpStatusCode.NotImplemented;
+            }
+
+            if (exception is IBusinessException) 
+            {
+                return HttpStatusCode.Forbidden;
             }
 
             return HttpStatusCode.InternalServerError;

@@ -1,4 +1,5 @@
 ﻿using CleanArchitecture.Application.Common.Interfaces;
+using CleanArchitecture.Application.Common.Validation;
 using FluentValidation;
 using Microsoft.EntityFrameworkCore;
 using System.Threading;
@@ -15,9 +16,9 @@ namespace CleanArchitecture.Application.TodoLists.Commands.CreateTodoList
             _context = context;
 
             RuleFor(v => v.Title)
-                .NotEmpty().WithMessage("Title is required.")
-                .MaximumLength(200).WithMessage("Title must not exceed 200 characters.")
-                .MustAsync(BeUniqueTitle).WithMessage("The specified title already exists.");
+                .NotEmpty().WithErrorCode(ValidationErrorCodes.TODO_LIST_TITLE_REQUIRED).WithMessage("Title is required.")
+                .MaximumLength(200).WithErrorCode(ValidationErrorCodes.TODO_LIST_TITLE_TOO_LONG).WithMessage("Title must not exceed 200 characters.")
+                .MustAsync(BeUniqueTitle).WithErrorCode(ValidationErrorCodes.TODO_LIST_TITLE_NOT_UNIQUE).WithMessage("The specified title already exists.");
         }
 
         public async Task<bool> BeUniqueTitle(string title, CancellationToken cancellationToken)

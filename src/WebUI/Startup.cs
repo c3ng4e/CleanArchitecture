@@ -16,6 +16,8 @@ using NSwag.Generation.Processors.Security;
 using System.Linq;
 using CleanArchitecture.Infrastructure;
 using CleanArchitecture.WebUI.Checks;
+using System.Net;
+using CleanArchitecture.Application.Common.Exceptions;
 
 namespace CleanArchitecture.WebUI
 {
@@ -34,10 +36,12 @@ namespace CleanArchitecture.WebUI
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddApplication();
+            services.AddApplication(Configuration);
             services.AddInfrastructure(Configuration, Environment);
 
             services.AddScoped<ICurrentUserService, CurrentUserService>();
+            services.AddTransient<IHttpExceptionStatusCodeFinder, DefaultExceptionToErrorInfoConverter>();
+            services.AddTransient<IExceptionConverter<ValidationException>, DefaultValidationExceptionConverter>();
 
             services.AddHttpContextAccessor();
 
@@ -75,6 +79,12 @@ namespace CleanArchitecture.WebUI
                 });
 
                 configure.OperationProcessors.Add(new AspNetCoreOperationSecurityScopeProcessor("JWT"));
+            });
+
+            services.Configure<ExceptionHttpStatusCodeOptions>(options => 
+            {
+                options.Map("Ca.0001", HttpStatusCode.BadRequest);
+                options.Map("Ca.0002", HttpStatusCode.NotFound);
             });
         }
 
