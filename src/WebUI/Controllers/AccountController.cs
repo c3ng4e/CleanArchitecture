@@ -19,7 +19,7 @@ namespace CleanArchitecture.WebUI.Controllers
 
         public async Task<IActionResult> Register() 
         {
-            return Ok();
+            return BadRequest();
         }
     }
 }

@@ -37,24 +37,24 @@ namespace CleanArchitecture.WebUI.Common
         private Task HandleExceptionAsync(HttpContext context, Exception exception)
         {
 
-            if (exception is IBusinessException businessException) 
+            if (exception is ValidationException validationException) 
             {
-                var result = GetResult(context, businessException);
+                var result = GetResult(context, validationException);
                 return ExecuteObjectResultAsync(context, result);
             }
 
             return DefaultExceptionHandling(context, exception);
         }
 
-        public IActionResult GetResult<TException>(HttpContext context, TException exception) where TException : IBusinessException 
-        {
-            var converter = context.RequestServices.GetService<IExceptionConverter<TException>>();
-            if (converter == null) 
-            {
-                Console.WriteLine("derp");
-            }
-            return converter.Convert(exception);
-        }
+        //public IActionResult GetResult<TException>(HttpContext context, TException exception) where TException : IBusinessException 
+        //{
+        //    var converter = context.RequestServices.GetService<IExceptionConverter<TException>>();
+        //    if (converter == null) 
+        //    {
+        //        Console.WriteLine("derp");
+        //    }
+        //    return converter.Convert(exception);
+        //}
 
         public IActionResult GetResult(HttpContext context, ValidationException exception)
         {
@@ -80,7 +80,7 @@ namespace CleanArchitecture.WebUI.Common
             var result = string.Empty;
 
             switch (exception)
-            {
+            {                
                 case ValidationException validationException:
                     code = HttpStatusCode.BadRequest;
                     result = JsonConvert.SerializeObject(validationException.Failures);
